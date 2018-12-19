@@ -6,7 +6,7 @@ $(() => {
         unflipCard: (callback) => {
             cardFunctions._getUndiscoveredCard(undisCards => {
                 undisCards.forEach(cardFound => {
-                    console.log(MyGame.checkedCards.length);
+                    console.log(`Checked cards: ${MyGame.checkedCards.length}`);
                     console.log(MyGame.checkedCards.cards);
                     MyGame.workspace.find(`.card${cardFound.card.id}`).flip(false);
                     MyGame.checkedCards.cards.splice(cardFound.pos);
@@ -50,7 +50,7 @@ $(() => {
                                 cardFunctions.unflipCard();
                             }, 2000);
                         }
-                        
+
                         callback();
                     });
                 }
@@ -163,15 +163,17 @@ $(() => {
         paintBoard: () => {
             paintGame.vars.board = $('<section class="board">');
             paintGame.vars.board.cards = [];
-
+            
+            let cardCounter = 0;
             for (let row = 0; row < MyGame.numRows; ++row) {
                 let numColumns = MyGame.numCarts / MyGame.numRows;
-                let currentRow = $(`<section class="row" name="row${row}">`);
+                let currentRow = $(`<section class="row" name="row${row}">`);    
 
                 for (let column = 0; column < numColumns; ++column) {
-                    var card = $(`<div class="card${column}">`);
+                    var card = $(`<div class="card${cardCounter}">`);
                     var cardFront = $(`<div class="front"><img src="cardBack.png"></div>`);
                     var cardBack = $(`<div class="back"><img src="cardFront.png"></div>`);
+                    cardCounter++;
                     card.append(cardFront);
                     card.append(cardBack);
                     card.flip();                
