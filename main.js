@@ -66,7 +66,7 @@ $(() => {
         workspace: null,
         listeners: [{ event: 'click', target: 'input[name="level"]', func: e => { MyGame.setLevel($(e.target).val()); } },
         {
-            event: 'click', target: 'input[type="checkbox"]', func: e => {
+            event: 'click', target: 'img', func: e => {
                 let cardId = e.target.name.replace('card', '');
                 cardFunctions.flipCard(cardId);
             }
@@ -75,6 +75,7 @@ $(() => {
             event: 'click', target: 'input[type="submit"]', func: e => {
                 MyGame.loadGameLevel();
                 e.preventDefault();
+                
             }
         }
         ],
@@ -147,7 +148,10 @@ $(() => {
                 for (let column = 0; column < numColumns; ++column) {
                     var card = $(`<img src="cardBack.png" name="card${column}">`).click(function() {
                         console.log(`Has seleccionado la carta [${row}, ${column}]`);
+                        ++MyGame.numClicks;
+                        $('#scoreClicks').text(`${MyGame.numClicks}`);
                     });
+                
                     currentRow.append(card);
                 }
 
