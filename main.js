@@ -3,37 +3,56 @@
 $(() => {
     console.log('page loaded');
     var cardFunctions = {
-        unflipCard: () => {
-            let cardFound = cardFunctions._getUndiscoveredCard();
-            MyGame.checkedCards.cards.splice(cardFound.pos);
-            MyGame.checkedCards.length--;
+        unflipCard: (callback) => {
+            cardFunctions._getUndiscoveredCard(undisCards => {
+                undisCards.forEach(cardFound => {
+                    console.log(MyGame.checkedCards.length);
+                    console.log(MyGame.checkedCards.cards);
+                    MyGame.workspace.find(`.card${cardFound.card.id}`).flip(false);
+                    MyGame.checkedCards.cards.splice(cardFound.pos);
+                    MyGame.checkedCards.length--;
+                    console.log(`Carta ocultada ${cardFound.card.id}`);
+                });
 
-            console.log(`Carta ocultada ${cardFound.card.id}`);
+                if(callback) callback();
+            });
         },
-        _getUndiscoveredCard: () => {
-            for (let i = 0; i < MyGame.checkedCards.cards.length; i++) {
-                if (!MyGame.checkedCards.cards[i].discovered);
-                return { pos: i, card: MyGame.checkedCards.cards[i] };
+        _getUndiscoveredCard: (callback) => {
+            let undisCards = [];
+            for (let i = 0; i < MyGame.checkedCards.cards.length && undisCards.length < 2; i++) {
+                if (!MyGame.checkedCards.cards[i].discovered)
+                    undisCards.push({ pos: i, card: MyGame.checkedCards.cards[i] });
             }
+            callback(undisCards);
         },
-        flipCard: (cardId) => {
+        flipCard: (cardId, callback) => {
             if (MyGame.checkedCards.length >= 2)
                 cardFunctions.unflipCard();
+            else {
+                cardFunctions._flipCard(cardId);
 
-            cardFunctions._flipCard(cardId);
+                if (MyGame.checkedCards.length >= 2) {
+                    cardFunctions._getUndiscoveredCard(undisCards => {
+                        console.log(`Cartas giradas:`);
+                        console.log(undisCards);
+                        
+                        if(undisCards.length < 2)
+                            return;
 
-            if (MyGame.checkedCards.length >= 2) {
-                let cardFound1 = cardFunctions._getUndiscoveredCard();
-                let cardFound2 = cardFunctions._getUndiscoveredCard();
+                        let cardFound1 = undisCards[0];
+                        let cardFound2 = undisCards[1];
 
-                if (cardFunctions.matchCards(cardFound1.card.id, cardFound2.card.id)) {
-                    MyGame.checkedCards.cards[cardFound1.pos].discovered = true;
-                    MyGame.checkedCards.cards[cardFound2.pos].discovered = true;
-                } else {
-                    setTimeout(() => {
-                        cardFunctions.unflipCard();
-                        cardFunctions.unflipCard();
-                    }, 2000);
+                        if (cardFunctions.matchCards(cardFound1.card.id, cardFound2.card.id)) {
+                            MyGame.checkedCards.cards[cardFound1.pos].discovered = true;
+                            MyGame.checkedCards.cards[cardFound2.pos].discovered = true;
+                        } else {
+                            setTimeout(() => {
+                                cardFunctions.unflipCard();
+                            }, 2000);
+                        }
+                        
+                        callback();
+                    });
                 }
             }
         },
@@ -66,9 +85,12 @@ $(() => {
         workspace: null,
         listeners: [{ event: 'click', target: 'input[name="level"]', func: e => { MyGame.setLevel($(e.target).val()); } },
         {
-            event: 'click', target: 'img', func: e => {
-                let cardId = e.target.name.replace('card', '');
-                cardFunctions.flipCard(cardId);
+            event: 'click', target: 'div[class^="card"]', func: e => {
+                let cardId = $(e.target.parentElement.parentElement).attr('class').replace('card', '');
+                cardFunctions.flipCard(cardId, () => {
+                    ++MyGame.numClicks;
+                    $('#scoreClicks').text(`${MyGame.numClicks}`);
+                });
             }
         },
         {
@@ -146,12 +168,12 @@ $(() => {
                 let currentRow = $(`<section class="row" name="row${row}">`);
 
                 for (let column = 0; column < numColumns; ++column) {
-                    var card = $(`<img src="cardBack.png" name="card${column}">`).click(function() {
-                        console.log(`Has seleccionado la carta [${row}, ${column}]`);
-                        ++MyGame.numClicks;
-                        $('#scoreClicks').text(`${MyGame.numClicks}`);
-                    });
-                
+                    var card = $(`<div class="card${column}">`);
+                    var cardFront = $(`<div class="front"><img src="cardBack.png"></div>`);
+                    var cardBack = $(`<div class="back"><img src="cardFront.png"></div>`);
+                    card.append(cardFront);
+                    card.append(cardBack);
+                    card.flip();                
                     currentRow.append(card);
                 }
 
