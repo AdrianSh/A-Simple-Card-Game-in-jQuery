@@ -1,0 +1,25 @@
+* {
+    padding: 0;
+    margin: 0;
+}
+
+body {
+    background: url("./fondo.jpg");
+    color: #d6c9b5;
+}
+
+.menu {
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 5%;
+    width: 15%;
+}
+
+.board {
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 5%;
+    width: 40%;
+
+    display: flex;
+}

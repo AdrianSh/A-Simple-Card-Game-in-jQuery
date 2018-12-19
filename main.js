@@ -91,7 +91,7 @@ $(() => {
     }
 
     var paintGame = {
-        vars: { myGame: null },
+        vars: { myGame: null},
         init: (e) => {
             if (!e) { console.error('No se ha encontrado el contenedor principal en el cual pintar el juego!'); return; }
             console.log('Vamos a comenzar a pintar el juego!');
@@ -107,6 +107,7 @@ $(() => {
             MyGame.levels.forEach(l => {
                 paintGame.vars.menu.append($(`<p><input type="radio" name="level" value="${l.label}">${l.label}</p>`));
             });
+
             paintGame.vars.menu.append(`<h1><span id="scoreClicks">0</span> clicks</h1>`);
             paintGame.vars.myGame.append(paintGame.vars.menu);
         },
