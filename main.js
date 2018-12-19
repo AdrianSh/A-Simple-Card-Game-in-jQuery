@@ -70,6 +70,12 @@ $(() => {
                 let cardId = e.target.name.replace('card', '');
                 cardFunctions.flipCard(cardId);
             }
+        },
+        {
+            event: 'click', target: 'input[type="submit"]', func: e => {
+                MyGame.loadGameLevel();
+                e.preventDefault();
+            }
         }
         ],
 
@@ -77,10 +83,14 @@ $(() => {
             if (typeof (window.jQuery) == 'undefined' || !window.jQuery) { console.error('No se ha cargado aun jQuery'); return; }
             MyGame.setLevel('Facil');
             MyGame.workspace = $('#myGame');
-            MyGame.painter = paintGame.init(MyGame.workspace);
-
+            MyGame.painter = paintGame;
+            MyGame.painter.init(MyGame.workspace);
             MyGame.registerEventListeners();
             console.log('Juego inicializado!');
+        },
+        loadGameLevel: () => {
+            MyGame.painter.removeBoard();
+            MyGame.painter.paintBoard();
         },
         registerEventListeners: () => {
             MyGame.listeners.forEach(l => {
@@ -102,32 +112,29 @@ $(() => {
             if (!e) { console.error('No se ha encontrado el contenedor principal en el cual pintar el juego!'); return; }
             console.log('Vamos a comenzar a pintar el juego!');
             paintGame.vars.myGame = e;
-
-            paintGame.paintMenu();
+            
+            paintGame.paintMenu(() => {
+                paintGame.vars.myGame.find(`input[value="${MyGame.currentLevel}"]`).prop("checked", true);
+            });
+            
             paintGame.paintBoard();
         },
-        paintMenu: () => {
-
+        paintMenu: (callback) => {
             paintGame.vars.menu = $('<form class="menu">');
 
             MyGame.levels.forEach(l => {
                 paintGame.vars.menu.append($(`<p><input type="radio" id="${l.label}" name="level" value="${l.label}">${l.label}</p>`));
             });
 
-            paintGame.vars.menu.append($('<input type="submit" value="Iniciar">').click(function () {
-                if ($(`#${MyGame.levels[0].label}`).is(':checked')) {
-                    console.log("Facil");
-                    
-                } else if ($(`#${MyGame.levels[1].label}`).is(':checked')) {
-                    console.log("Medio");
-                    MyGame.currentLevel = MyGame.setLevel(MyGame.currentLevel = MyGame.levels[1].label);
-                } else {
-                    console.log("Dificil");
-                }
-            }));
+            paintGame.vars.menu.append($('<input type="submit" value="Iniciar">'));
 
             paintGame.vars.menu.append(`<h1><span id="scoreClicks">${MyGame.numClicks}</span> clicks</h1>`);
             paintGame.vars.myGame.append(paintGame.vars.menu);
+
+            callback();
+        },
+        removeBoard: () => {
+            paintGame.vars.myGame.find('.board').remove();
         },
         paintBoard: () => {
             paintGame.vars.board = $('<section class="board">');
