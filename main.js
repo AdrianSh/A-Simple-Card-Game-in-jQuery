@@ -12,21 +12,21 @@ $(() => {
         },
         _getUndiscoveredCard: () => {
             for (let i = 0; i < MyGame.checkedCards.cards.length; i++) {
-                if(!MyGame.checkedCards.cards[i].discovered);
-                return {pos: i, card: MyGame.checkedCards.cards[i]};
+                if (!MyGame.checkedCards.cards[i].discovered);
+                return { pos: i, card: MyGame.checkedCards.cards[i] };
             }
         },
         flipCard: (cardId) => {
-            if(MyGame.checkedCards.length >= 2)
+            if (MyGame.checkedCards.length >= 2)
                 cardFunctions.unflipCard();
-            
+
             cardFunctions._flipCard(cardId);
 
-            if(MyGame.checkedCards.length >= 2){
+            if (MyGame.checkedCards.length >= 2) {
                 let cardFound1 = cardFunctions._getUndiscoveredCard();
                 let cardFound2 = cardFunctions._getUndiscoveredCard();
 
-                if(cardFunctions.matchCards(cardFound1.card.id, cardFound2.card.id)){ 
+                if (cardFunctions.matchCards(cardFound1.card.id, cardFound2.card.id)) {
                     MyGame.checkedCards.cards[cardFound1.pos].discovered = true;
                     MyGame.checkedCards.cards[cardFound2.pos].discovered = true;
                 } else {
@@ -39,11 +39,11 @@ $(() => {
         },
         _flipCard: (cardId) => {
             MyGame.checkedCards.length++;
-            MyGame.checkedCards.cards.push({id: cardId, discovered: false});
+            MyGame.checkedCards.cards.push({ id: cardId, discovered: false });
             console.log(`Carta ${cardId} descubierta!`);
         },
         matchCards: (cardId1, cardId2, callback) => {
-            if(cardId1 >= MyGame.numCarts || cardId2 >= MyGame.numCarts )
+            if (cardId1 >= MyGame.numCarts || cardId2 >= MyGame.numCarts)
                 console.error("What! Se ha dado click en una carta que no es del juego!!");
             return MyGame.pairs[cardId1] == cardId2;
         }
@@ -51,21 +51,26 @@ $(() => {
 
     var MyGame = {
         numCarts: 0,
-        levels: [{ label: 'Facil', numCarts: 12,
-                    /* En cada posicion del array esta su carta pareja */
-                    pairs: [1,0,3,2,5,4,7,6,9,8,11,10] },
-                { label: 'Medio', numCarts: 24 },
-                { label: 'Dificil', numCarts: 36 }],
+        numClicks: 0,
+        levels: [{
+            label: 'Facil', numCarts: 12, numRows: 2,
+            /* En cada posicion del array esta su carta pareja */
+            pairs: [1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10]
+        },
+        { label: 'Medio', numCarts: 24, numRows: 3 },
+        { label:'Dificil', numCarts: 36, numRows: 4 }],
         currentLevel: 'Facil',
         pairs: [],
-        checkedCards: { length: 0, cards: []},
+        checkedCards: { length: 0, cards: [] },
         painter: null,
         workspace: null,
         listeners: [{ event: 'click', target: 'input[name="level"]', func: e => { MyGame.setLevel($(e.target).val()); } },
-            { event: 'click', target: 'input[type="checkbox"]', func: e => {
+        {
+            event: 'click', target: 'input[type="checkbox"]', func: e => {
                 let cardId = e.target.name.replace('card', '');
                 cardFunctions.flipCard(cardId);
-            }}
+            }
+        }
         ],
 
         init: () => {
@@ -87,11 +92,12 @@ $(() => {
             let levelInfo = MyGame.levels.filter(l => l.label == level)[0];
             MyGame.pairs = levelInfo.pairs;
             MyGame.numCarts = levelInfo.numCarts;
+            MyGame.numRows = levelInfo.numRows;
         }
     }
 
     var paintGame = {
-        vars: { myGame: null},
+        vars: { myGame: null },
         init: (e) => {
             if (!e) { console.error('No se ha encontrado el contenedor principal en el cual pintar el juego!'); return; }
             console.log('Vamos a comenzar a pintar el juego!');
@@ -101,24 +107,46 @@ $(() => {
             paintGame.paintBoard();
         },
         paintMenu: () => {
-            paintGame.vars.menu = $('<section class="menu">');
-            paintGame.vars.menu.append($('<input type="submit" value="Iniciar">'));
+
+            paintGame.vars.menu = $('<form class="menu">');
 
             MyGame.levels.forEach(l => {
-                paintGame.vars.menu.append($(`<p><input type="radio" name="level" value="${l.label}">${l.label}</p>`));
+                paintGame.vars.menu.append($(`<p><input type="radio" id="${l.label}" name="level" value="${l.label}">${l.label}</p>`));
             });
 
-            paintGame.vars.menu.append(`<h1><span id="scoreClicks">0</span> clicks</h1>`);
+            paintGame.vars.menu.append($('<input type="submit" value="Iniciar">').click(function () {
+                if ($(`#${MyGame.levels[0].label}`).is(':checked')) {
+                    console.log("Facil");
+                    
+                } else if ($(`#${MyGame.levels[1].label}`).is(':checked')) {
+                    console.log("Medio");
+                    MyGame.currentLevel = MyGame.setLevel(MyGame.currentLevel = MyGame.levels[1].label);
+                } else {
+                    console.log("Dificil");
+                }
+            }));
+
+            paintGame.vars.menu.append(`<h1><span id="scoreClicks">${MyGame.numClicks}</span> clicks</h1>`);
             paintGame.vars.myGame.append(paintGame.vars.menu);
         },
         paintBoard: () => {
             paintGame.vars.board = $('<section class="board">');
             paintGame.vars.board.cards = [];
-            for (let i = 0; i < MyGame.numCarts; i++) {
-                var card = $(`<input type="checkbox" name="card${i}">`);
-                paintGame.vars.board.cards.push(card);
-                paintGame.vars.board.append(card);
+
+            for (let row = 0; row < MyGame.numRows; ++row) {
+                let numColumns = MyGame.numCarts / MyGame.numRows;
+                let currentRow = $(`<section class="row" name="row${row}">`);
+
+                for (let column = 0; column < numColumns; ++column) {
+                    var card = $(`<img src="cardBack.png" name="card${column}">`).click(function() {
+                        console.log(`Has seleccionado la carta [${row}, ${column}]`);
+                    });
+                    currentRow.append(card);
+                }
+
+                paintGame.vars.board.append(currentRow);
             }
+
             paintGame.vars.myGame.append(paintGame.vars.board);
         }
     };
