@@ -95,9 +95,10 @@ $(() => {
         },
         {
             event: 'click', target: 'input[type="submit"]', func: e => {
+                MyGame.numClicks = 0;
+                $('#scoreClicks').text(`${MyGame.numClicks}`);
                 MyGame.loadGameLevel();
                 e.preventDefault();
-                
             }
         }
         ],
