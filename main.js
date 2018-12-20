@@ -14,30 +14,35 @@ $(() => {
                     console.log(`Carta ocultada ${cardFound.card.id}`);
                 });
 
-                if(callback) callback();
+                if (callback) {
+                    callback();
+                }
             });
         },
         _getUndiscoveredCard: (callback) => {
             let undisCards = [];
             for (let i = 0; i < MyGame.checkedCards.cards.length && undisCards.length < 2; i++) {
-                if (!MyGame.checkedCards.cards[i].discovered)
+                if (!MyGame.checkedCards.cards[i].discovered) {
                     undisCards.push({ pos: i, card: MyGame.checkedCards.cards[i] });
+                }
             }
+
             callback(undisCards);
         },
         flipCard: (cardId, callback) => {
-            if (MyGame.checkedCards.length >= 2)
+            if (MyGame.checkedCards.length >= 2) {
                 cardFunctions.unflipCard();
-            else {
+            } else {
                 cardFunctions._flipCard(cardId);
 
                 if (MyGame.checkedCards.length >= 2) {
                     cardFunctions._getUndiscoveredCard(undisCards => {
                         console.log(`Cartas giradas:`);
                         console.log(undisCards);
-                        
-                        if(undisCards.length < 2)
+
+                        if (undisCards.length < 2) {
                             return;
+                        }
 
                         let cardFound1 = undisCards[0];
                         let cardFound2 = undisCards[1];
@@ -62,8 +67,9 @@ $(() => {
             console.log(`Carta ${cardId} descubierta!`);
         },
         matchCards: (cardId1, cardId2, callback) => {
-            if (cardId1 >= MyGame.numCarts || cardId2 >= MyGame.numCarts)
+            if (cardId1 >= MyGame.numCarts || cardId2 >= MyGame.numCarts) {
                 console.error("What! Se ha dado click en una carta que no es del juego!!");
+            }
             return MyGame.pairs[cardId1] == cardId2;
         }
     };
@@ -77,7 +83,7 @@ $(() => {
             pairs: [1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10]
         },
         { label: 'Medio', numCarts: 24, numRows: 3 },
-        { label:'Dificil', numCarts: 36, numRows: 4 }],
+        { label: 'Dificil', numCarts: 36, numRows: 4 }],
         currentLevel: 'Facil',
         pairs: [],
         checkedCards: { length: 0, cards: [] },
@@ -136,11 +142,11 @@ $(() => {
             if (!e) { console.error('No se ha encontrado el contenedor principal en el cual pintar el juego!'); return; }
             console.log('Vamos a comenzar a pintar el juego!');
             paintGame.vars.myGame = e;
-            
+
             paintGame.paintMenu(() => {
                 paintGame.vars.myGame.find(`input[value="${MyGame.currentLevel}"]`).prop("checked", true);
             });
-            
+
             paintGame.paintBoard();
         },
         paintMenu: (callback) => {
@@ -163,20 +169,18 @@ $(() => {
         paintBoard: () => {
             paintGame.vars.board = $('<section class="board">');
             paintGame.vars.board.cards = [];
-            
-            let cardCounter = 0;
+
             for (let row = 0; row < MyGame.numRows; ++row) {
                 let numColumns = MyGame.numCarts / MyGame.numRows;
-                let currentRow = $(`<section class="row" name="row${row}">`);    
+                let currentRow = $(`<section class="row" name="row${row}">`);
 
                 for (let column = 0; column < numColumns; ++column) {
-                    var card = $(`<div class="card${cardCounter}">`);
-                    var cardFront = $(`<div class="front"><img src="cardBack.png"></div>`);
+                    var card = $(`<div class="card${row + column}">`);
+                    var cardFront = $(`<div class="front"><img src="./cards/cardBack.png"></div>`);
                     var cardBack = $(`<div class="back"><img src="cardFront.png"></div>`);
-                    cardCounter++;
                     card.append(cardFront);
                     card.append(cardBack);
-                    card.flip();                
+                    card.flip();
                     currentRow.append(card);
                 }
 
