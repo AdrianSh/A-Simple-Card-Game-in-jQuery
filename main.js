@@ -14,11 +14,12 @@ $(() => {
                     console.log(`Carta ocultada ${cardFound.card.id}`);
                 });
 
-                if (callback) {
+                if (callback != null) {
                     callback();
                 }
             });
         },
+
         _getUndiscoveredCard: (callback) => {
             let undisCards = [];
             for (let i = 0; i < MyGame.checkedCards.cards.length && undisCards.length < 2; i++) {
@@ -29,6 +30,7 @@ $(() => {
 
             callback(undisCards);
         },
+
         flipCard: (cardId, callback) => {
             if (MyGame.checkedCards.length >= 2) {
                 cardFunctions.unflipCard();
@@ -61,12 +63,14 @@ $(() => {
                 }
             }
         },
+
         _flipCard: (cardId) => {
             MyGame.checkedCards.length++;
             MyGame.checkedCards.cards.push({ id: cardId, discovered: false });
             console.log(`Carta ${cardId} descubierta!`);
         },
-        matchCards: (cardId1, cardId2, callback) => {
+
+        matchCards: (cardId1, cardId2) => {
             if (cardId1 >= MyGame.numCarts || cardId2 >= MyGame.numCarts) {
                 console.error("What! Se ha dado click en una carta que no es del juego!!");
             }
@@ -99,6 +103,7 @@ $(() => {
                 });
             }
         },
+
         {
             event: 'click', target: 'input[type="submit"]', func: e => {
                 MyGame.numClicks = 0;
@@ -118,15 +123,18 @@ $(() => {
             MyGame.registerEventListeners();
             console.log('Juego inicializado!');
         },
+
         loadGameLevel: () => {
             MyGame.painter.removeBoard();
             MyGame.painter.paintBoard();
         },
+
         registerEventListeners: () => {
             MyGame.listeners.forEach(l => {
                 MyGame.workspace.on(l.event, l.target, l.func);
             });
         },
+
         setLevel: level => {
             MyGame.currentLevel = level;
             let levelInfo = MyGame.levels.filter(l => l.label == level)[0];
@@ -149,6 +157,7 @@ $(() => {
 
             paintGame.paintBoard();
         },
+
         paintMenu: (callback) => {
             paintGame.vars.menu = $('<form class="menu">');
 
@@ -163,9 +172,11 @@ $(() => {
 
             callback();
         },
+
         removeBoard: () => {
             paintGame.vars.myGame.find('.board').remove();
         },
+
         paintBoard: () => {
             paintGame.vars.board = $('<section class="board">');
             paintGame.vars.board.cards = [];
@@ -176,10 +187,10 @@ $(() => {
 
                 for (let column = 0; column < numColumns; ++column) {
                     var card = $(`<div class="card${row + column}">`);
-                    var cardFront = $(`<div class="front"><img src="./cards/cardBack.png"></div>`);
-                    var cardBack = $(`<div class="back"><img src="cardFront.png"></div>`);
-                    card.append(cardFront);
+                    var cardFront = $(`<div class="back"><img src="cardFront.png"></div>`);
+                    var cardBack = $(`<div class="front"><img src="./cards/cardBack.png"></div>`);
                     card.append(cardBack);
+                    card.append(cardFront);
                     card.flip();
                     currentRow.append(card);
                 }
